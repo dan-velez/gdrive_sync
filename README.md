@@ -27,6 +27,14 @@ $ gdrive_sync <local_path> <drive_path>
 
 ### API
 The package exposes some API wrapper functions for google drive.
+```python
+import gdrive
+local_path = "/home/user/project/main.py"
+drive_path = "project/main.py"
+gdrive.upload_file(local_path, drive_path)
+# gdrive.parent_id can help you manipulate nested files.
+print(gdrive.parent_id(drive_path))
+```
 * **upload_file (local_path, drive_path)**
 	> Uploads string `local_path` to string `drive_path`.
 	*Returns*: string `file_id` if it is uploaded, `None` otherwise.
