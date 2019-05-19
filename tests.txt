@@ -1,0 +1,22 @@
+SYNC_INTERVAL=30
+create x/
+create x/x.py
+create x/y/
+create x/y/y.py
+
+expected output:
+[created] : [x]
+[created] : [x/x.py]
+[created] : [x/y]
+[created] : [x/y/y.py]
+
+TODO
+----
+* in event listener
+    * test file type
+    * if dir
+        * do not place in drive_mods unless it is created
+* in sync_drive
+    * if mod is 'created'
+        * if file_type is dir
+            * run gdrive.create_dir(drive_path)
