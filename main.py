@@ -28,22 +28,23 @@ last_file = ""
 las_event = ""
 
 class FmonHandler(LoggingEventHandler):
-    global drive_mods
     def dispatch(self, event):
         global last_read
         global last_file
         global last_event
+        global drive_mods
         # Don't sync vim's swp files
-        if not ("swp" in event.src_path) and not (event.src_path == '.'):
+        if (not ("swp" in event.src_path) and not (event.src_path == '.') and
+        not("swx" in event.src_path)):
             # Clean path
             fname = event.src_path
             if event.src_path.startswith("./"):
                 fname = event.src_path[2:]
             # Don't process modified directory events
-            if event.event_type == "modified" and os.path.isdir(fname):
+            if event.event_type == "modified" and (os.path.isdir(fname) or
+            (not os.path.isdir(fname) and not os.path.isfile(fname))):
                 return
             # Fix bug in watchdog
-            # print("[*] last_file [%s]   fname [%s]" % (last_file, fname))
             read_time = time.time()
             if ((read_time - last_read < 1) and (last_file == fname) and 
             (last_event == 'created')):
@@ -56,10 +57,20 @@ class FmonHandler(LoggingEventHandler):
             last_event = event.event_type
             # Add the modification to drive_mods
             print("[%s] : [%s]" % (event.event_type, fname))
-            drive_mods.append({
+            if not mod_exists(fname): drive_mods.append({
                     "type": event.event_type,
                     "path": fname
                 })
+
+def mod_exists(fname):
+    "Search the drive_mods for an existing modification."
+    global drive_mods
+    exists = False
+    for mod in drive_mods:
+        if mod['path'] == fname:
+            exists = True
+            break
+    return exists
 
 def sync_shared_folder():
     """Execute any changes in the drive_mods struct,
@@ -72,17 +83,17 @@ def sync_shared_folder():
         if mod['type'] is "created":
             if os.path.isdir(mod['path']):
                 print("[*] creating dir [%s]" % (mod['path']))
-                # gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
+                gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
             else:
                 print("[*] creating file [%s]" % (mod['path']))
-                # gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
+                gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
 
         elif mod['type'] is "modified":
-            # gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
+            gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
             print("[*] updating file [%s]" % (mod['path']))
 
         elif mod['type'] is "deleted":
-            # gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
+            gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
             print("[*] deleting file [%s]" % (mod['path']))
     print("[*] sync complete, resetting drive_mods\n")
     drive_mods = []
@@ -111,6 +122,8 @@ def main():
             sync_shared_folder()
     except KeyboardInterrupt:
         observer.stop()
+    except Exception as e:
+        print("[*] execution error [%s]" % (e))
     observer.join()
 
 if __name__ == "__main__":

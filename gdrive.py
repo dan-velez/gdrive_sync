@@ -13,6 +13,8 @@ from google.auth.transport.requests import Request
 from apiclient import errors
 from apiclient.http import MediaFileUpload
 
+DEBUG = False
+
 def upload_file(local_path, drive_path):
     """Create a new file on the drive. If the file already exists,
     the old one will be overwritten."""
@@ -83,7 +85,7 @@ def parent_id(drive_path):
     fname = drive_path.split(os.path.sep)[-1:][0]
     # Find each ID and descend into it
     for dirp in dirs:
-        print("[*] search for [%s]" % (dirp))
+        if DEBUG: print("[*] search for [%s]" % (dirp))
         # Build search query
         if len(current_parent) == 0: query = ("name='%s'" % (dirp))
         else: query = ("name='%s' and '%s' in parents" % (dirp, current_parent))
@@ -96,10 +98,10 @@ def parent_id(drive_path):
         # Test if file found
         if len(files) > 0:
             current_parent = files[0].get('id')
-            print("[*] directory ID [%s]" % current_parent)
+            if DEBUG: print("[*] directory ID [%s]" % current_parent)
         else:
             # Create a dir if it does not exist.
-            print("[*] could not find dir [%s]; create it" % (dirp))
+            if DEBUG: print("[*] could not find dir [%s]; create it" % (dirp))
             if len(current_parent) == 0:
                 file_metadata = {
                     'name': dirp,
@@ -115,13 +117,13 @@ def parent_id(drive_path):
                 body=file_metadata,
                 fields='id').execute()
             current_parent = file.get('id')
-            print("[*] created folder, new parent [%s]" % (current_parent))
+            if DEBUG: print("[*] created folder, new parent [%s]" % (current_parent))
     # Print results
     res = {
             'parent_id': current_parent,
             'file_id': check_exists(current_parent, fname)
         }
-    pprint.PrettyPrinter(indent=4).pprint(res)
+    if DEBUG: pprint.PrettyPrinter(indent=4).pprint(res)
     return res
 
 def create_service():
@@ -149,7 +151,7 @@ def create_service():
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
         service = build('drive', 'v3', credentials=creds)
-        print("[*] drive service created")
+        if DEBUG: print("[*] drive service created")
         return service
     except Exception as e:
         print("[*] could not create auth credentials [%s]" %(e))

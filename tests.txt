@@ -16,10 +16,10 @@ syncing drive...
 
 TODO
 ----
-* deleting bugs
 * run tests
 * python packaging
 * add .syncignore file
+* ROOT_DIR in config file
 * The script has a flag to download everything from that folder upon start.
     The script has a flag to upload everything to that folder upon start.
     BY default the daemon starts and only watches for changes.
