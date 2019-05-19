@@ -38,6 +38,8 @@ class FmonHandler(LoggingEventHandler):
         not("swx" in event.src_path)):
             # Clean path
             fname = clean_path(event.src_path)
+            dest_path = ""
+            if event.event_type == "moved": dest_path = clean_path(event.dest_path)
             # Don't process modified directory events
             if event.event_type == "modified" and (os.path.isdir(fname) or
             (not os.path.isdir(fname) and not os.path.isfile(fname))):
@@ -57,7 +59,8 @@ class FmonHandler(LoggingEventHandler):
             print("[%s] : [%s]" % (event.event_type, fname))
             if not mod_exists(fname): drive_mods.append({
                     "type": event.event_type,
-                    "path": fname
+                    "path": fname,
+                    "dest_path": dest_path
                 })
 
 def clean_path(fname):
@@ -96,6 +99,10 @@ def sync_shared_folder():
                 gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
                 print("[*] updating file [%s]" % (mod['path']))
 
+            elif mod['type'] is "moved":
+                gdrive.move_file(ROOT_DIR+"/"+mod['path'], ROOT_DIR+"/"+mod['dest_path']) 
+                print("[*] moving file [%s] to [%s]" % (mod['path'], mod['dest_path']))
+
             elif mod['type'] is "deleted":
                 gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
                 print("[*] deleting file [%s]" % (mod['path']))
@@ -110,20 +117,20 @@ def usage():
 
 def main():
     global ROOT_DIR
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         usage()
-    path = sys.argv[1]
-    ROOT_DIR = sys.argv[2]
+    path = '.'
+    ROOT_DIR = sys.argv[1]
     print("[*] gdrive_sync daemon started")
     print("[*] local path: [%s]" % (os.path.abspath(path)))
     print("[*] drive path: [%s]" % (ROOT_DIR))
-    event_handler = FmonHandler()
-    observer = Observer()
-    observer.schedule(event_handler, path, recursive=True)
-    observer.start()
-    print("[*] running watchdog")
-    # register_schedule()
     try:
+        event_handler = FmonHandler()
+        observer = Observer()
+        observer.schedule(event_handler, path, recursive=True)
+        observer.start()
+        print("[*] running watchdog")
+        # register_schedule()
         while True:
             time.sleep(SYNC_INTERVAL)
             sync_shared_folder()

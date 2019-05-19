@@ -48,6 +48,23 @@ def upload_file(local_path, drive_path):
     except Exception as e:
         print("[*] could not create file [%s]: [%s]" % (drive_path, e))
 
+def move_file(drive_src_path, drive_dest_path):
+    "Move a file on the drive."
+    service = create_service()
+    ids_src = parent_id(drive_src_path)
+    ids_dest = parent_id(drive_dest_path)
+    # Retrieve the existing parents to remove
+    f = service.files().get(fileId=ids_src['file_id'],
+			    fields='parents').execute()
+    previous_parents = ",".join(f.get('parents'))
+    f = service.files().update(
+        fileId=ids_src['file_id'],
+        addParents=ids_dest['parent_id'],
+        removeParents=previous_parents, # ids_src['parent_id'],
+        fields=('id, parents')).execute()
+    print("[*] moved [%s] to [%s]. ID: [%s]" % (drive_src_path, drive_dest_path, f.get('id')))
+    return f.get('id')
+    
 def create_dir(drive_path):
     "Create a directory on the Google Drive."
     return parent_id(drive_path+"/TMP.txt")['parent_id']
