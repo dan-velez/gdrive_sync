@@ -16,7 +16,11 @@ syncing drive...
 TODO
 ----
 * python packaging
-* clean input dir path!
+* "moved event"
+* path resolution bugs
+    * local dir MUST be working dir
+    * uploading hidden files
+
 * add .syncignore file
 * ROOT_DIR in config file
 * The script has a flag to download everything from that folder upon start.

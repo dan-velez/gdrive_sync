@@ -61,8 +61,7 @@ class FmonHandler(LoggingEventHandler):
                 })
 
 def clean_path(fname):
-    while (fname[0] == ".") or (fname[0] == "/"):
-        fname = fname[1:]
+    if fname.startswith("./"): fname = fname[2:]
     return fname
 
 def mod_exists(fname):
@@ -81,26 +80,29 @@ def sync_shared_folder():
     """
     global drive_mods
     print("\n[*] syncing drive folder...")
-    for mod in drive_mods:
-        # Perform sync action.
-        print(ROOT_DIR+"/"+mod['path'])
-        if mod['type'] is "created":
-            if os.path.isdir(mod['path']):
-                print("[*] creating dir [%s]" % (mod['path']))
-                gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
-            else:
-                print("[*] creating file [%s]" % (mod['path']))
+    try:
+        for mod in drive_mods:
+            # Perform sync action.
+            print(ROOT_DIR+"/"+mod['path'])
+            if mod['type'] is "created":
+                if os.path.isdir(mod['path']):
+                    print("[*] creating dir [%s]" % (mod['path']))
+                    gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
+                else:
+                    print("[*] creating file [%s]" % (mod['path']))
+                    gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
+
+            elif mod['type'] is "modified":
                 gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
+                print("[*] updating file [%s]" % (mod['path']))
 
-        elif mod['type'] is "modified":
-            gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
-            print("[*] updating file [%s]" % (mod['path']))
-
-        elif mod['type'] is "deleted":
-            gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
-            print("[*] deleting file [%s]" % (mod['path']))
-    print("[*] sync complete, resetting drive_mods\n")
-    drive_mods = []
+            elif mod['type'] is "deleted":
+                gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
+                print("[*] deleting file [%s]" % (mod['path']))
+        print("[*] sync complete, resetting drive_mods\n")
+        drive_mods = []
+    except Exception as e:
+        print("[*] sync_shared_folder failed [%s]" % (e))
 
 def usage():
     print("""Usage: gdrive_sync <local_dir> <drive_dir>""")
