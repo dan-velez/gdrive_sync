@@ -1,5 +1,5 @@
 # gdrive_sync
-A daemon that keeps a designated folder synced with one designated in your google drive.
+A daemon that keeps a local folder synced with one in your google drive.
 
 ## Installation
 ```bash
@@ -19,13 +19,10 @@ To sync the directory completely, the folder needs to be uploaded to the drive f
 
 ### CLI
 ```bash
-$ gdrive_sync <local_path> <drive_path>
+$ gdrive_sync <drive_path>
 ```
-* **local_path** 
-	> The path of the folder on the drive to sync.
-
 * **drive_path**
-	> The path of the folder on the drive to sync.
+	> The path of the folder on the drive to sync with.
 
 ### API
 The package exposes some API wrapper functions for google drive.
@@ -37,6 +34,7 @@ gdrive.upload_file(local_path, drive_path)
 # gdrive.parent_id can help you manipulate nested files.
 print(gdrive.parent_id(drive_path))
 gdrive.create_dir("project/module/submodule")
+gdrive.move_file("drive_path", "project/module/main.py")
 ```
 * **upload_file (local_path, drive_path)**
 	> Uploads string `local_path` to string `drive_path`.
@@ -46,6 +44,9 @@ gdrive.create_dir("project/module/submodule")
 	> Works like `mkdir -p`.
 	*Returns*: a string id of the created directory.
 
+* **move_file (drive_src_path, drive_dest_path)**
+	> Move a file on the drive. If any folder in the destination path does not exist, it is created.
+	*Returns*: String fileID of the moved file.
 * **parent_id (drive_file)**
 	> Finds the id of the parent of `drive_file`.
 	*Returns*: an object with the id of the file, and the id of the parent. 
