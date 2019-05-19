@@ -15,6 +15,8 @@ following lines:
 ```
 These fields can be found in the drive API [documentation](https://developers.google.com/drive/api/v3/quickstart/python). Click the button "ENABLE THE DRIVE API" and download the file. **Rename this file `credentials.json`**.
 
+To sync the directory completely, the folder needs to be uploaded to the drive first, then run the daemon to track local changes.
+
 ### CLI
 ```bash
 $ gdrive_sync <local_path> <drive_path>
