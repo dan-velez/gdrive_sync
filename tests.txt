@@ -13,11 +13,10 @@ syncing drive...
 [created] : [x/y/]
 [created] : [x/y/y.py]
 
-
 TODO
 ----
-* run tests
 * python packaging
+* clean input dir path!
 * add .syncignore file
 * ROOT_DIR in config file
 * The script has a flag to download everything from that folder upon start.

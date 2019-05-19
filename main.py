@@ -20,7 +20,7 @@ SYNC_INTERVAL=30
 drive_mods = []
 
 # The folder on the drive that is to be synced with this one.
-ROOT_DIR = "chromeos_SYNC"
+ROOT_DIR = ""
 
 # Use this for a watchdog bug of multiple event generation.
 last_read = time.time()
@@ -37,9 +37,7 @@ class FmonHandler(LoggingEventHandler):
         if (not ("swp" in event.src_path) and not (event.src_path == '.') and
         not("swx" in event.src_path)):
             # Clean path
-            fname = event.src_path
-            if event.src_path.startswith("./"):
-                fname = event.src_path[2:]
+            fname = clean_path(event.src_path)
             # Don't process modified directory events
             if event.event_type == "modified" and (os.path.isdir(fname) or
             (not os.path.isdir(fname) and not os.path.isfile(fname))):
@@ -62,6 +60,11 @@ class FmonHandler(LoggingEventHandler):
                     "path": fname
                 })
 
+def clean_path(fname):
+    while (fname[0] == ".") or (fname[0] == "/"):
+        fname = fname[1:]
+    return fname
+
 def mod_exists(fname):
     "Search the drive_mods for an existing modification."
     global drive_mods
@@ -80,6 +83,7 @@ def sync_shared_folder():
     print("\n[*] syncing drive folder...")
     for mod in drive_mods:
         # Perform sync action.
+        print(ROOT_DIR+"/"+mod['path'])
         if mod['type'] is "created":
             if os.path.isdir(mod['path']):
                 print("[*] creating dir [%s]" % (mod['path']))

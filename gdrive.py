@@ -13,7 +13,7 @@ from google.auth.transport.requests import Request
 from apiclient import errors
 from apiclient.http import MediaFileUpload
 
-DEBUG = False
+DEBUG = True
 
 def upload_file(local_path, drive_path):
     """Create a new file on the drive. If the file already exists,
