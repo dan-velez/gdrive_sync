@@ -24,29 +24,42 @@ ROOT_DIR = "chromeos_SYNC"
 
 # Use this for a watchdog bug of multiple event generation.
 last_read = time.time()
+last_file = ""
+las_event = ""
 
 class FmonHandler(LoggingEventHandler):
     global drive_mods
     def dispatch(self, event):
         global last_read
+        global last_file
+        global last_event
+        # Don't sync vim's swp files
         if not ("swp" in event.src_path) and not (event.src_path == '.'):
+            # Clean path
             fname = event.src_path
-            read_time = time.time()
-            if read_time - last_read < 1:
-                last_read = read_time
-                return
-            last_read = read_time
             if event.src_path.startswith("./"):
                 fname = event.src_path[2:]
-            # Add the modification to drive_mods
+            # Don't process modified directory events
             if event.event_type == "modified" and os.path.isdir(fname):
                 return
-            else:
-                print("[%s] : [%s]" % (event.event_type, fname))
-                drive_mods.append({
-                        "type": event.event_type,
-                        "path": fname
-                    })
+            # Fix bug in watchdog
+            # print("[*] last_file [%s]   fname [%s]" % (last_file, fname))
+            read_time = time.time()
+            if ((read_time - last_read < 1) and (last_file == fname) and 
+            (last_event == 'created')):
+                last_event = event.event_type
+                last_read = read_time
+                last_file = fname
+                return
+            last_file = fname
+            last_read = read_time
+            last_event = event.event_type
+            # Add the modification to drive_mods
+            print("[%s] : [%s]" % (event.event_type, fname))
+            drive_mods.append({
+                    "type": event.event_type,
+                    "path": fname
+                })
 
 def sync_shared_folder():
     """Execute any changes in the drive_mods struct,
