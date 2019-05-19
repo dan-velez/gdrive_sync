@@ -83,33 +83,37 @@ def sync_shared_folder():
     """
     global drive_mods
     print("\n[*] syncing drive folder...")
-    try:
-        for mod in drive_mods:
-            # Perform sync action.
+    for mod in drive_mods:
+        # Perform sync action.
+        try:
             print(ROOT_DIR+"/"+mod['path'])
             if mod['type'] is "created":
+                # Create directory
                 if os.path.isdir(mod['path']):
                     print("[*] creating dir [%s]" % (mod['path']))
                     gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
                 else:
+                # Create file
                     print("[*] creating file [%s]" % (mod['path']))
                     gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
 
             elif mod['type'] is "modified":
+                # Update file
                 gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
                 print("[*] updating file [%s]" % (mod['path']))
 
             elif mod['type'] is "moved":
+                # Move file or folder
                 gdrive.move_file(ROOT_DIR+"/"+mod['path'], ROOT_DIR+"/"+mod['dest_path']) 
                 print("[*] moving file [%s] to [%s]" % (mod['path'], mod['dest_path']))
 
             elif mod['type'] is "deleted":
                 gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
                 print("[*] deleting file [%s]" % (mod['path']))
+        except Exception as e:
+            print("[*] sync_shared_folder failed [%s]" % (e))
         print("[*] sync complete, resetting drive_mods\n")
         drive_mods = []
-    except Exception as e:
-        print("[*] sync_shared_folder failed [%s]" % (e))
 
 def usage():
     print("""Usage: gdrive_sync <local_dir> <drive_dir>""")
