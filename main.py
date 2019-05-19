@@ -107,6 +107,7 @@ def usage():
     exit()
 
 def main():
+    global ROOT_DIR
     if len(sys.argv) < 3:
         usage()
     path = sys.argv[1]
