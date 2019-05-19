@@ -13,7 +13,35 @@ syncing drive...
 [created] : [x/y/]
 [created] : [x/y/y.py]
 
+
+
+==========================================
+[created] : [x]
+[created] : [y]
+[created] : [x/x.py]
+[modified] : [x]
+[modified] : [x/x.py]
+[created] : [x/y]
+[modified] : [x]
+[created] : [x/y/y.py]
+[modified] : [x/y]
+[modified] : [x/y/y.py]
+
+[*] syncing drive folder...
+[*] creating dir [x]
+[*] creating dir [y]
+[*] creating file [x/x.py]
+[*] updating file [x/x.py]
+[*] creating dir [x/y]
+[*] creating file [x/y/y.py]
+[*] updating file [x/y/y.py]
+[*] sync complete, resetting drive_mods
+==========================================
+
 TODO
 ----
 * run tests
 * python packaging
+* The script has a flag to download everything from that folder upon start.
+    The script has a flag to upload everything to that folder upon start.
+    BY default the daemon starts and only watches for changes.

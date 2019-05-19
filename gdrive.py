@@ -1,31 +1,7 @@
 #!/usr/bin/python3
-# gdrive.py - Contains the functions for CRUD on your gdrive.
 """
-The daemon starts with one argument - the path of the folder in the drive to sync to.
-The folder that the daemon is started in is the folder that will be synced.
-Only what is changed is uploaded to the drive
-
-The script has a flag to download everything from that folder upon start.
-The script has a flag to upload everything to that folder upon start.
-BY default the daemon starts and only watches for changes.
-
-Upload process
---------------
-drive_path
-> retrieve file ID of drive_path file
-    break path into parts
-    for each folder in parts
-        get file id of folder
-        if folder does not exist
-        create folder
-        add id to []
-    check if file exists, using the [] of folder IDs
-exists:
-    run upate method on that file
-else:
-    run create method on that file
+gdrive.py - Contains the functions for CRUD on your gdrive.
 """
-
 
 import pickle
 import os
@@ -187,5 +163,7 @@ if __name__ == "__main__":
         # create_dir("project2/module/submodule")
         # create_dir("chromeos/project2/module/submodule")
         # create_dir("project3/module/submodule")
+        pass
     except Exception as e:
        #  print("[*] could not execute [%s]" % (e))
+       pass

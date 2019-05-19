@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 """
-gdrive_sync.py - A daemon that keeps the designated folder always 
-    synced to google drive. The drive is specified in a config file.
+main.py - A daemon that keeps the designated folder always 
+synced to google drive. The drive is specified in a config file.
 """
+
 import sys
 import time
 import gdrive
@@ -21,18 +22,27 @@ drive_mods = []
 # The folder on the drive that is to be synced with this one.
 ROOT_DIR = "chromeos_SYNC"
 
+# Use this for a watchdog bug of multiple event generation.
+last_read = time.time()
+
 class FmonHandler(LoggingEventHandler):
     global drive_mods
     def dispatch(self, event):
+        global last_read
         if not ("swp" in event.src_path) and not (event.src_path == '.'):
             fname = event.src_path
+            read_time = time.time()
+            if read_time - last_read < 1:
+                last_read = read_time
+                return
+            last_read = read_time
             if event.src_path.startswith("./"):
                 fname = event.src_path[2:]
-            print("[%s] : [%s]" % (event.event_type, fname))
             # Add the modification to drive_mods
             if event.event_type == "modified" and os.path.isdir(fname):
                 return
             else:
+                print("[%s] : [%s]" % (event.event_type, fname))
                 drive_mods.append({
                         "type": event.event_type,
                         "path": fname
