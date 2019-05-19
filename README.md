@@ -34,10 +34,16 @@ drive_path = "project/main.py"
 gdrive.upload_file(local_path, drive_path)
 # gdrive.parent_id can help you manipulate nested files.
 print(gdrive.parent_id(drive_path))
+gdrive.create_dir("project/module/submodule")
 ```
 * **upload_file (local_path, drive_path)**
 	> Uploads string `local_path` to string `drive_path`.
 	*Returns*: string `file_id` if it is uploaded, `None` otherwise.
+
+* **create_dir (drive_path)**
+	> Works like `mkdir -p`.
+	*Returns*: a string id of the created directory.
+
 * **parent_id (drive_file)**
 	> Finds the id of the parent of `drive_file`.
 	*Returns*: an object with the id of the file, and the id of the parent. 
@@ -47,8 +53,6 @@ print(gdrive.parent_id(drive_path))
 		'file_id': "string"
 	}
 	```
-
-
 
 ## Description
 When the daemon starts it runs an instance of [watchdog](https://pypi.org/project/watchdog/) on the local_path directory. When a file is changed, it is uploaded to a path that corresponds to the one in the local folder. The file is overwritten if it exists. The synchronization function is ran every 60 seconds, and can be changed in the variable `SYNC_INTERVAL`  in the file `main.py`.

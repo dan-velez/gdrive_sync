@@ -70,6 +70,10 @@ def upload_file(local_path, drive_path):
     except Exception as e:
         print("[*] could not create file [%s]: [%s]" % (drive_path, e))
 
+def create_dir(drive_path):
+    "Create a directory on the Google Drive."
+    return parent_id(drive_path+"/TMP.txt")['parent_id']
+
 def delete_file(drive_path):
     "Delete a file on the drive."
     service = create_service()
@@ -116,15 +120,21 @@ def parent_id(drive_path):
         # Test if file found
         if len(files) > 0:
             current_parent = files[0].get('id')
-            print("[*] found parent [%s]" % current_parent)
+            print("[*] directory ID [%s]" % current_parent)
         else:
-            # Create a dir if not
+            # Create a dir if it does not exist.
             print("[*] could not find dir [%s]; create it" % (dirp))
-            file_metadata = {
-                'name': dirp,
-                'parents': [current_parent],
-                'mimeType': 'application/vnd.google-apps.folder'
-            }
+            if len(current_parent) == 0:
+                file_metadata = {
+                    'name': dirp,
+                    'mimeType': 'application/vnd.google-apps.folder'
+                }
+            else:
+                file_metadata = {
+                    'name': dirp,
+                    'parents': [current_parent],
+                    'mimeType': 'application/vnd.google-apps.folder'
+                }
             file = service.files().create(
                 body=file_metadata,
                 fields='id').execute()
@@ -170,5 +180,12 @@ def create_service():
         exit()
 
 ## DEBUG ##
-# upload_file("main.py", "chromeos/local/main/pydrive.py")
-# delete_file("chromeos/local/main/pydrive.py")
+if __name__ == "__main__":
+    try:
+        # upload_file("main.py", "chromeos/local/main/pydrive.py")
+        # delete_file("chromeos/local/main/pydrive.py")
+        # create_dir("project2/module/submodule")
+        # create_dir("chromeos/project2/module/submodule")
+        # create_dir("project3/module/submodule")
+    except Exception as e:
+       #  print("[*] could not execute [%s]" % (e))

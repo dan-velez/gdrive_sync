@@ -30,10 +30,13 @@ class FmonHandler(LoggingEventHandler):
                 fname = event.src_path[2:]
             print("[%s] : [%s]" % (event.event_type, fname))
             # Add the modification to drive_mods
-            drive_mods.append({
-                    "type": event.event_type,
-                    "path": fname
-                })
+            if event.event_type == "modified" and os.path.isdir(fname):
+                return
+            else:
+                drive_mods.append({
+                        "type": event.event_type,
+                        "path": fname
+                    })
 
 def sync_shared_folder():
     """Execute any changes in the drive_mods struct,
@@ -44,8 +47,12 @@ def sync_shared_folder():
     for mod in drive_mods:
         # Perform sync action.
         if mod['type'] is "created":
-            # gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
-            print("[*] creating file [%s]" % (mod['path']))
+            if os.path.isdir(mod['path']):
+                print("[*] creating dir [%s]" % (mod['path']))
+                # gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
+            else:
+                print("[*] creating file [%s]" % (mod['path']))
+                # gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
 
         elif mod['type'] is "modified":
             # gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
