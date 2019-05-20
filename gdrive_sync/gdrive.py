@@ -7,6 +7,7 @@ import pickle
 import os
 import mimetypes
 import pprint
+from princ import princ
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -44,13 +45,14 @@ def upload_file(local_path, drive_path):
                     media_body=media_body,
                     fields='id').execute()
             pass
-        if not f is None: print("[*] uploaded %s" % (local_path))
+        if not f is None: princ("[*] uploaded %s" % (local_path), "green")
     except Exception as e:
-        print("[*] could not create file [%s]: [%s]" % (drive_path, e))
+        princ("[*] could not create file [%s]: [%s]" % (drive_path, e), "red")
 
 def move_file(drive_src_path, drive_dest_path):
     "Move a file on the drive."
     service = create_service()
+    # Get IDs for bot paths
     ids_src = parent_id(drive_src_path)
     ids_dest = parent_id(drive_dest_path)
     # Retrieve the existing parents to remove
@@ -62,12 +64,22 @@ def move_file(drive_src_path, drive_dest_path):
         addParents=ids_dest['parent_id'],
         removeParents=previous_parents, # ids_src['parent_id'],
         fields=('id, parents')).execute()
-    print("[*] moved [%s] to [%s]. ID: [%s]" % (drive_src_path, drive_dest_path, f.get('id')))
+    princ("[*] moved [%s] to [%s]. ID: [%s]" %
+            (drive_src_path, drive_dest_path, f.get('id')), "green")
     return f.get('id')
-    
+
+def move_dir(drive_src_path, drive_dest_path):
+    "Move a directory on the drive"
+    service = create_service()
+    ids_src = parent_id(drive_src_path)
+    ids_dest = parent_id(drive_dest_path)
+    # Get IDs for both paths
+
 def create_dir(drive_path):
     "Create a directory on the Google Drive."
-    return parent_id(drive_path+"/TMP.txt")['parent_id']
+    res = parent_id(drive_path+"/TMP.txt")['parent_id']
+    princ("[*] created dir [%s]" % (drive_path), "green")
+    return res
 
 def delete_file(drive_path):
     "Delete a file on the drive."
@@ -77,7 +89,7 @@ def delete_file(drive_path):
     file_id = ids['file_id']
     if not file_id is None:
         resp = service.files().delete(fileId=file_id).execute()
-    print("[*] deleted [%s]" % (drive_path))
+    princ("[*] deleted [%s]" % (drive_path), "green")
     return
 
 def check_exists(parent_id, fname):
@@ -153,8 +165,8 @@ def create_service():
     creds = None
     try:
         # Create auth credentials.
-        if os.path.exists('token.pickle'):
-            with open('token.pickle', 'rb') as token:
+        if os.path.exists('data/token.pickle'):
+            with open('data/token.pickle', 'rb') as token:
                 creds = pickle.load(token)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
@@ -162,26 +174,29 @@ def create_service():
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    'credentials.json', SCOPES)
+                    'data/credentials.json', SCOPES)
                 creds = flow.run_local_server()
             # Save the credentials for the next run
-            with open('token.pickle', 'wb') as token:
+            with open('data/token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
         service = build('drive', 'v3', credentials=creds)
         if DEBUG: print("[*] drive service created")
         return service
     except Exception as e:
-        print("[*] could not create auth credentials [%s]" %(e))
+        princ("[*] could not create auth credentials [%s]" %(e), "red")
         exit()
 
 ## DEBUG ##
 if __name__ == "__main__":
     try:
-        # upload_file("main.py", "chromeos/local/main/pydrive.py")
+        upload_file("main.py", "chromeos/local/main/pydrive.py")
         # delete_file("chromeos/local/main/pydrive.py")
         # create_dir("project2/module/submodule")
         # create_dir("chromeos/project2/module/submodule")
         # create_dir("project3/module/submodule")
+        #########################
+        # Find a file or directory
+        service = create_service()
         pass
     except Exception as e:
        #  print("[*] could not execute [%s]" % (e))

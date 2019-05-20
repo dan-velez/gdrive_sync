@@ -13,14 +13,54 @@ syncing drive...
 [created] : [x/y/]
 [created] : [x/y/y.py]
 
+DONE
+----
+* Make copy of drive_mods in sync function
+
 TODO
 ----
-* python packaging
-* "moved event"
-* path resolution bugs
-    * local dir MUST be working dir
-    * uploading hidden files
+* Moving a folder, moves the directory first, leaving the file w/o parent
+    * reproduce:
+        > create dir module/
+        > create dir submodule/
+        > create n>1 files in submodule/
+        > move submodule/ to module/
+    * The event group needs to be reduced to just move dir/
+    ** Same thing with delete dir...
 
+* TEST:
+    BASIC
+    -----
+    create dir submodule/
+    create file submodule/main.py
+    create file submodule/util.py
+    create file submodule/util2.py
+    create file submodule/util3.py
+    move submodule/ to module/
+
+    create above dir outisde ROOT_DIR
+    move into ROOT_DIR
+
+    ADVANCED
+    --------
+    create file
+    create dir
+    create dir/file
+    create dir/dir
+    create dir/dir/file
+
+    create dir2
+    create dir2/dir
+    create dir2/dir2
+    create dir2/file1
+    create dir2/dir/file1
+    create dir2/dir2/file1
+    create dir2/dir2/file2
+    create dir2/dir2/file3
+
+    move dir2 -> dir/dir2
+
+* python packaging
 * add .syncignore file
 * ROOT_DIR in config file
 * The script has a flag to download everything from that folder upon start.

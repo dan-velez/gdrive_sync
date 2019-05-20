@@ -8,12 +8,14 @@ import sys
 import time
 import gdrive
 import os
+import pprint
+from princ import princ
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 
 # The interval at which the drive will sync with the shared folder,
 # in secods.
-SYNC_INTERVAL=30
+SYNC_INTERVAL=10
 
 # A structure that holds the drive modifications that have occured
 # after the last sync interval.
@@ -28,6 +30,7 @@ last_file = ""
 las_event = ""
 
 class FmonHandler(LoggingEventHandler):
+    "Event handler for watchdog."
     def dispatch(self, event):
         global last_read
         global last_file
@@ -56,7 +59,7 @@ class FmonHandler(LoggingEventHandler):
             last_read = read_time
             last_event = event.event_type
             # Add the modification to drive_mods
-            print("[%s] : [%s]" % (event.event_type, fname))
+            princ("[%s] : [%s]" % (event.event_type, fname), "cyan")
             if not mod_exists(fname): drive_mods.append({
                     "type": event.event_type,
                     "path": fname,
@@ -66,6 +69,53 @@ class FmonHandler(LoggingEventHandler):
 def clean_path(fname):
     if fname.startswith("./"): fname = fname[2:]
     return fname
+
+DEBUG = True
+
+def fix_drive_mods():
+    "Reorder 'move dir' events so that the files are moved first."
+    global drive_mods
+    print("[*] fixing drive mods...")
+    d_mods = drive_mods.copy()
+    # Holds the mods of the 'move dir' event.
+    event_group = []
+    # Where to splice the array
+    event_group_idx = 0
+    i = 0
+    while i < len(d_mods):
+        print("[*] scanning d_mods [%s]" % (str(i)))
+        mod = d_mods[i]
+        # Find the mods
+        if (mod['type'] == 'moved') and os.path.isdir(mod['dest_path']):
+            print("\n[*] found start of 'move dir' event group [%s]\n" %(mod))
+            # Collect the mods that are in the event group
+            moved_dir = mod['path'].split(os.path.sep)[0]
+            event_group_idx = i
+            j = 0
+            for submod in d_mods[i:]:
+                if ((submod['type'] == "moved") and 
+                (submod['path'].split(os.path.sep)[0] == moved_dir)):
+                    event_group.append(submod)
+                    j = j+1
+                else:
+                    break
+            # Reverse array
+            event_group.reverse()
+            print("\n[*] reversed event group")
+            if DEBUG: pprint.PrettyPrinter(indent=4).pprint(event_group)
+            print("\n")
+            # Splice the bad mods out using d_mods[i] to d_mods[j+1]
+            d_mods = d_mods[0:i]+d_mods[i+j:]
+            # Splice the fixed mods into d_mods[i]
+            d_mods = d_mods[0:i]+event_group+d_mods[i:]
+            # Set drive_mods to the fixed copy
+            print("\n[*] fixed drive mods")
+            if DEBUG: pprint.PrettyPrinter(indent=4).pprint(d_mods)
+            print("\n")
+            drive_mods = d_mods
+            i += j-1
+            print("[*] NEW ITERATOR: [%s]" % (str(i)))
+        i += 1
 
 def mod_exists(fname):
     "Search the drive_mods for an existing modification."
@@ -82,38 +132,42 @@ def sync_shared_folder():
     relative to the ROOT_DIR.
     """
     global drive_mods
+    # fix_drive_mods()
+    d_mods = drive_mods.copy()
+    drive_mods = []
     print("\n[*] syncing drive folder...")
-    for mod in drive_mods:
+    print("*"*64)
+    for mod in d_mods:
         # Perform sync action.
         try:
-            print(ROOT_DIR+"/"+mod['path'])
             if mod['type'] is "created":
                 # Create directory
                 if os.path.isdir(mod['path']):
-                    print("[*] creating dir [%s]" % (mod['path']))
+                    princ("[*] creating dir [%s]" % (mod['path']), "blue")
                     gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
                 else:
                 # Create file
-                    print("[*] creating file [%s]" % (mod['path']))
+                    princ("[*] creating file [%s]" % (mod['path']), "blue")
                     gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
 
             elif mod['type'] is "modified":
                 # Update file
+                princ("[*] updating file [%s]" % (mod['path']), "blue")
                 gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
-                print("[*] updating file [%s]" % (mod['path']))
 
             elif mod['type'] is "moved":
                 # Move file or folder
+                princ("[*] moving file [%s] to [%s]" % (mod['path'], mod['dest_path']), "blue")
                 gdrive.move_file(ROOT_DIR+"/"+mod['path'], ROOT_DIR+"/"+mod['dest_path']) 
-                print("[*] moving file [%s] to [%s]" % (mod['path'], mod['dest_path']))
 
             elif mod['type'] is "deleted":
+                princ("[*] deleting file [%s]" % (mod['path']), "blue")
                 gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
-                print("[*] deleting file [%s]" % (mod['path']))
+
         except Exception as e:
-            print("[*] sync_shared_folder failed [%s]" % (e))
-        print("[*] sync complete, resetting drive_mods\n")
-        drive_mods = []
+            princ("[*] sync_shared_folder failed [%s]" % (e), "red")
+        print("-"*64)
+    print("[*] sync complete\n")
 
 def usage():
     print("""Usage: gdrive_sync <local_dir> <drive_dir>""")
@@ -141,7 +195,7 @@ def main():
     except KeyboardInterrupt:
         observer.stop()
     except Exception as e:
-        print("[*] execution error [%s]" % (e))
+        princ("[*] execution error [%s]" % (e), "red")
     observer.join()
 
 if __name__ == "__main__":
