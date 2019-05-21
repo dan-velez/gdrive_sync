@@ -23,9 +23,9 @@ def check_exists(parent_id, fname):
     if len(parent_id) == 0: query = ("name='%s'" % (fname))
     else: query = ("name='%s' and '%s' in parents" % (fname, parent_id))
     resp = service.files().list(
-            q=query,
-            fields="files(id, name)",
-            pageToken=None).execute()
+        q=query,
+        fields="files(id, name)",
+        pageToken=None).execute()
     files = resp.get('files', [])
     if len(files) > 0: return files[0].get('id')
     else: return None
@@ -37,6 +37,7 @@ def find_id(drive_path):
     current_parent = ""
     dirs = drive_path.split(os.path.sep)[0:-1]
     fname = drive_path.split(os.path.sep)[-1:][0]
+    depth = 0
     # Find each ID and descend into it
     for dirp in dirs:
         if DEBUG: print("[*] search for [%s]" % (dirp))
@@ -45,49 +46,46 @@ def find_id(drive_path):
         else: query = ("name='%s' and '%s' in parents" % (dirp, current_parent))
         # Request search
         resp = service.files().list(
-                q=query,
-                fields="files(id, name)",
-                pageToken=None).execute()
+            q=query,
+            fields="files(id, name)",
+            pageToken=None).execute()
         files = resp.get('files', [])
         # Test if file found
         if len(files) > 0:
             # TODO DO NOT USE 1st file found.. COUNT THE DEPTH and
-            # find the file in the array files which contains the 
-            # same depth. NO 2 DIRS OF SAME NAME CAN HAVE THE
-            # SAME DEPTH
+            # find matching NAME and DEPTH
             current_parent = files[0].get('id')
-            if DEBUG: print("[*] directory ID [%s]" % current_parent)
+            if DEBUG: print("[*] directory ID [%s]::[%s]" 
+                    % (current_parent, str(len(files))))
         else:
             # Create a dir if it does not exist.
+            if DEBUG: print("[*] could not find dir [%s]; create it" % (dirname))
             current_parent = create_folder(current_parent, dirp)
+        depth += 1
     # Print results
-    res = {
-            'parent_id': current_parent,
-            'file_id': check_exists(current_parent, fname)
-        }
+    res = { 'parent_id': current_parent,
+            'file_id': check_exists(current_parent, fname) }
+    if DEBUG: print("[*] Depth: [%s]" % (depth))
     if DEBUG: pprint.PrettyPrinter(indent=4).pprint(res)
     return res
 
-def create_folder(parent_id, fname):
+def create_folder(parent_id, dirname):
     """Create a folder if it does not exist. You will need to know
-    the parent ID to run this. Supply None to create in root.
+    the parent ID to run this. Supply "" to create in root.
     """
-    if DEBUG: print("[*] could not find dir [%s]; create it" % (dirp))
-    if len(current_parent) == 0:
-        file_metadata = {
-            'name': dirp,
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
+    if len(parent_id) == 0:
+        # Create it in the root directory of the drive....
+        file_metadata = { 'name': dirname,
+                          'mimeType': 'application/vnd.google-apps.folder' }
     else:
-        file_metadata = {
-            'name': dirp,
-            'parents': [current_parent],
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
+        # Create it in a parent directory.
+        file_metadata = { 'name': dirname,
+                          'parents': [parent_id],
+                          'mimeType': 'application/vnd.google-apps.folder' }
     file = service.files().create(
         body=file_metadata,
         fields='id').execute()
-    if DEBUG: print("[*] created folder, new parent [%s]" % (current_parent))
+    if DEBUG: print("[*] created folder [%s]" % (parent_id))
     return file.get('id')
 
 def create_service():
@@ -115,7 +113,7 @@ def create_service():
             with open('data/token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
         service = build('drive', 'v3', credentials=creds)
-        if DEBUG: print("[*] drive service created")
+        # if DEBUG: print("[*] drive service created")
         return service
     except Exception as e:
         princ("[*] could not create auth credentials [%s]" %(e), "red")
@@ -123,4 +121,6 @@ def create_service():
 
 if __name__ == "__main__":
     # DEBUG #
+    # find_id("chromeos/home_synced/ml-math/notes.txt")
+    find_id("chromeos/home_synced/modules/submodule/TMP.txt")
     pass

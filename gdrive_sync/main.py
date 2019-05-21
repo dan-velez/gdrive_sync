@@ -24,6 +24,9 @@ drive_mods = []
 # The folder on the drive that is to be synced with this one.
 ROOT_DIR = ""
 
+# Verbose logging
+DEBUG = True
+
 # Use this for a watchdog bug of multiple event generation.
 last_read = time.time()
 last_file = ""
@@ -69,8 +72,6 @@ class FmonHandler(LoggingEventHandler):
 def clean_path(fname):
     if fname.startswith("./"): fname = fname[2:]
     return fname
-
-DEBUG = True
 
 def fix_drive_mods():
     "Reorder 'move dir' events so that the files are moved first."

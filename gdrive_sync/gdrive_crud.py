@@ -24,9 +24,9 @@ def upload_file(local_path, drive_path):
     media_body = MediaFileUpload(local_path, mimetype=mime_type, resumable=True)
     ids = find_id(drive_path)
     meta_data= { 'name': drive_path.split(os.path.sep)[-1:][0],
-                 'parents': [ids['find_id']] }
-    print("[*] uploading [%s] mimetype [%s]" % (local_path, mimetype))
-    # Upload the file
+                 'parents': [ids['parent_id']] }
+    print("[*] uploading [%s] mimetype [%s]" % (local_path, mime_type))
+    # Send API request
     try:
         if ids['file_id'] is None:
             # Create file
@@ -58,17 +58,19 @@ def delete_file(drive_path):
 def move_file(drive_src_path, drive_dest_path):
     "Move a file or directory on the drive."
     service = create_service()
-    # Get IDs for bot paths
+    # Get IDs for both paths
     ids_src = find_id(drive_src_path)
     ids_dest = find_id(drive_dest_path)
+    new_fname = drive_dest_path.split(os.path.sep)[-1:][0]
     # Retrieve the existing parents to remove
-    f = service.files().get(fileId=ids_src['file_id'],
+    f = service.files().get(fileId=ids_src['parent_id'],
 			    fields='parents').execute()
     previous_parents = ",".join(f.get('parents'))
     # Update the file by changing its parent ID.
     f = service.files().update(
-        fileId=ids_src['file_id'],
-        addParents=ids_dest['find_id'],
+        body={ "name": new_fname },
+        fileId=ids_src['parent_id'],
+        addParents=ids_dest['parent_id'],
         removeParents=previous_parents, # ids_src['find_id'],
         fields=('id, parents')).execute()
     princ("[*] moved [%s] to [%s]. ID: [%s]" %
@@ -86,8 +88,7 @@ def create_dir(drive_path):
 ## DEBUG ##
 if __name__ == "__main__":
     try:
-        upload_file("main.py", "chromeos/local/main/pydrive.py")
-        pass
+        # upload_file("main.py", "chromeos/home_synced/modules/submodule/prog.py")
+        move_file("chromeos/home_synced/submodule5/TMP.txt", "chromeos/home_synced/submodule/submodule7")
     except Exception as e:
-       #  print("[*] could not execute [%s]" % (e))
-       pass
+       print("[*] could not execute [%s]" % (e))

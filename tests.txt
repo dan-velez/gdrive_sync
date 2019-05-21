@@ -23,8 +23,12 @@ TODO
 * Moving a folder, moves the directory first, leaving the file w/o parent
     * The event group needs to be reduced to just move dir/
     ** Same thing with delete dir...
-* Debug find_id function 
+* Debug find_id function
+    * Might get wrong child because of same parents but nested
+    * should return the id of the requested resource...
+        * currently returns just the parent
 * Update README
+* clean names of paths for creating and moving files... 
 
 * TEST:
     BASIC
