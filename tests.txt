@@ -16,17 +16,15 @@ syncing drive...
 DONE
 ----
 * Make copy of drive_mods in sync function
+* Consolidate utility functions
 
 TODO
 ----
 * Moving a folder, moves the directory first, leaving the file w/o parent
-    * reproduce:
-        > create dir module/
-        > create dir submodule/
-        > create n>1 files in submodule/
-        > move submodule/ to module/
     * The event group needs to be reduced to just move dir/
     ** Same thing with delete dir...
+* Debug find_id function 
+* Update README
 
 * TEST:
     BASIC

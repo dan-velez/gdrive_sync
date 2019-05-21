@@ -1,0 +1,6 @@
+gdrive_sync/
+    gdrive_api_wrapper.py
+        "CRUD functions"
+
+    gdrive_util.py
+        "Assist CRUD functions"
