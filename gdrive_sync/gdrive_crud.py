@@ -81,7 +81,7 @@ def move_file(drive_src_path, drive_dest_path):
 
 def create_dir(drive_path):
     "Create a directory on the Google Drive. Works like mkdir -p."
-    res = find_id(drive_path+"/TMP.txt")['find_id']
+    res = find_id(drive_path+"/TMP.txt")['file_id']
     princ("[*] created dir [%s]" % (drive_path), "green")
     return res
 

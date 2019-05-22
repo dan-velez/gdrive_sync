@@ -140,30 +140,31 @@ def sync_shared_folder():
     print("*"*64)
     for mod in d_mods:
         # Perform sync action.
+        dpath = ROOT_DIR+"/"+mod['path']
         try:
             if mod['type'] is "created":
                 # Create directory
                 if os.path.isdir(mod['path']):
-                    princ("[*] creating dir [%s]" % (mod['path']), "blue")
-                    gdrive.create_dir(ROOT_DIR+"/"+mod['path'])
+                    princ("[*] creating dir [%s]" % (dpath), "blue")
+                    gdrive.create_dir(dpath)
                 else:
                 # Create file
-                    princ("[*] creating file [%s]" % (mod['path']), "blue")
-                    gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
+                    princ("[*] creating file [%s]" % (dpath), "blue")
+                    gdrive.upload_file(mod['path'], dpath)
 
             elif mod['type'] is "modified":
                 # Update file
-                princ("[*] updating file [%s]" % (mod['path']), "blue")
-                gdrive.upload_file(mod['path'], ROOT_DIR + '/' + mod['path'])
+                princ("[*] updating file [%s]" % (dpath), "blue")
+                gdrive.upload_file(mod['path'], dpath)
 
             elif mod['type'] is "moved":
                 # Move file or folder
-                princ("[*] moving file [%s] to [%s]" % (mod['path'], mod['dest_path']), "blue")
-                gdrive.move_file(ROOT_DIR+"/"+mod['path'], ROOT_DIR+"/"+mod['dest_path']) 
+                princ("[*] moving file [%s] to [%s]" % (dpath, ROOT_DIR+"/"+mod['dest_path']), "blue")
+                gdrive.move_file(dpath, ROOT_DIR+"/"+mod['dest_path']) 
 
             elif mod['type'] is "deleted":
-                princ("[*] deleting file [%s]" % (mod['path']), "blue")
-                gdrive.delete_file(ROOT_DIR + '/' + mod['path'])
+                princ("[*] deleting file [%s]" % (dpath), "blue")
+                gdrive.delete_file(dpath)
 
         except Exception as e:
             princ("[*] sync_shared_folder failed [%s]" % (e), "red")
@@ -171,7 +172,7 @@ def sync_shared_folder():
     print("[*] sync complete\n")
 
 def usage():
-    print("""Usage: gdrive_sync <local_dir> <drive_dir>""")
+    print("""Usage: gdrive_sync <drive_dir>""")
     exit()
 
 def main():
@@ -253,5 +254,5 @@ def debug_fix_drive_mods():
     fix_drive_mods()
 
 if __name__ == "__main__":
-    # main()
-    debug_fix_drive_mods()
+    main()
+    # debug_fix_drive_mods()

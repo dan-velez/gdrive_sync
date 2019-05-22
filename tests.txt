@@ -19,14 +19,13 @@ DONE
 * Consolidate utility functions
 * Debug move_dir function
 * Debug fix_drive_mods
+* Removed return of trashed files in find_id function
 
 TODO
 ----
 * main.fix_drive_mods
     * fix 'deleted' 'dir' event groups
 * Test all gdrive_crud functions
-* gdrive_utils.find_id
-    * Might get wrong child because of same parents but nested (hard to reproduce)
 * clean names of paths for creating and moving files... 
     * using root "/" in start of paths
     * ending path names with "/"
