@@ -24,6 +24,15 @@ $ gdrive_sync <drive_path>
 * **drive_path**
 	> The path of the folder on the drive to sync with.
 
+**Run as Daemon**
+```bash
+# Attached to current terminal
+$ gdrive_sync <drive_path> &
+
+# Detach from terminal (can close window)
+$ nohup gdrive_sync <drive_path> &
+```
+
 ### API
 The package exposes some API wrapper functions for google drive.
 ```python
