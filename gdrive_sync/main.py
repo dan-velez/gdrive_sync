@@ -6,9 +6,9 @@ synced to google drive. The drive is specified in a config file.
 
 import sys
 import time
-import gdrive
 import os
 import pprint
+import gdrive_crud as gdrive
 from princ import princ
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
@@ -87,35 +87,35 @@ def fix_drive_mods():
         print("[*] scanning d_mods [%s]" % (str(i)))
         mod = d_mods[i]
         # Find the mods
-        if (mod['type'] == 'moved') and os.path.isdir(mod['dest_path']):
+        if ((mod['type'] == 'moved' or mod['type'] == 'deleted') 
+        and os.path.isdir(mod['dest_path'])):
             print("\n[*] found start of 'move dir' event group [%s]\n" %(mod))
             # Collect the mods that are in the event group
             moved_dir = mod['path'].split(os.path.sep)[0]
             event_group_idx = i
             j = 0
             for submod in d_mods[i:]:
-                if ((submod['type'] == "moved") and 
+                if ((submod['type'] == mod['type']) and 
                 (submod['path'].split(os.path.sep)[0] == moved_dir)):
                     event_group.append(submod)
                     j = j+1
                 else:
                     break
             # Reverse array
-            event_group.reverse()
-            print("\n[*] reversed event group")
-            if DEBUG: pprint.PrettyPrinter(indent=4).pprint(event_group)
-            print("\n")
+            # event_group.reverse()
+            # print("\n[*] reversed event group")
+            # if DEBUG: pprint.PrettyPrinter(indent=4).pprint(event_group)
+            # print("\n")
             # Splice the bad mods out using d_mods[i] to d_mods[j+1]
-            d_mods = d_mods[0:i]+d_mods[i+j:]
+            d_mods = d_mods[0:i+1]+d_mods[i+j:]
             # Splice the fixed mods into d_mods[i]
-            d_mods = d_mods[0:i]+event_group+d_mods[i:]
+            # d_mods = d_mods[0:i]+event_group+d_mods[i:]
             # Set drive_mods to the fixed copy
-            print("\n[*] fixed drive mods")
+            print("[*] fixed drive mods")
             if DEBUG: pprint.PrettyPrinter(indent=4).pprint(d_mods)
             print("\n")
             drive_mods = d_mods
             i += j-1
-            print("[*] NEW ITERATOR: [%s]" % (str(i)))
         i += 1
 
 def mod_exists(fname):
@@ -133,7 +133,7 @@ def sync_shared_folder():
     relative to the ROOT_DIR.
     """
     global drive_mods
-    # fix_drive_mods()
+    fix_drive_mods()
     d_mods = drive_mods.copy()
     drive_mods = []
     print("\n[*] syncing drive folder...")
@@ -179,17 +179,18 @@ def main():
     if len(sys.argv) < 2:
         usage()
     path = '.'
-    ROOT_DIR = sys.argv[1]
+    ROOT_DIR = sys.argv[1] # Folder in Google Drive to sync to.
     print("[*] gdrive_sync daemon started")
     print("[*] local path: [%s]" % (os.path.abspath(path)))
     print("[*] drive path: [%s]" % (ROOT_DIR))
     try:
+        # Start file monitor
         event_handler = FmonHandler()
         observer = Observer()
         observer.schedule(event_handler, path, recursive=True)
         observer.start()
         print("[*] running watchdog")
-        # register_schedule()
+        # Register scheduler
         while True:
             time.sleep(SYNC_INTERVAL)
             sync_shared_folder()
@@ -199,5 +200,58 @@ def main():
         princ("[*] execution error [%s]" % (e), "red")
     observer.join()
 
+def debug_fix_drive_mods():
+    princ("[*] Running debug_fix_drive_mods", "green")
+    global drive_mods
+    drive_mods = [
+        {
+            "type": "created",
+            "path": "chromeos/home_synced/x.py",
+            "dest_path": ""
+        },
+        {
+            "type": "created",
+            "path": "chromeos/home_synced/y.py",
+            "dest_path": ""
+        },
+        {
+            "type": "created",
+            "path": "chromeos/home_synced/z.py",
+            "dest_path": ""
+        },
+        {
+            "type": "deleted",
+            "path": "data",
+            "dest_path": "__pycache__"
+        },
+        {
+            "type": "deleted",
+            "path": "data",
+            "dest_path": "__pycache__/x.py"
+        },
+        {
+            "type": "deleted",
+            "path": "data",
+            "dest_path": "__pycache__/y.py"
+        },
+        {
+            "type": "deleted",
+            "path": "data",
+            "dest_path": "__pycache__/z.py"
+        },
+        {
+            "type": "created",
+            "path": "chromeos/home_synced/c.py",
+            "dest_path": ""
+        },
+        {
+            "type": "created",
+            "path": "chromeos/home_synced/b.py",
+            "dest_path": ""
+        }
+    ]
+    fix_drive_mods()
+
 if __name__ == "__main__":
-    main()
+    # main()
+    debug_fix_drive_mods()

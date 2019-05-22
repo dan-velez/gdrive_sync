@@ -18,16 +18,15 @@ DONE
 * Make copy of drive_mods in sync function
 * Consolidate utility functions
 * Debug move_dir function
+* Debug fix_drive_mods
 
 TODO
 ----
 * main.fix_drive_mods
-    * The event group needs to be reduced to just move dir/
-    * Same thing with delete dir...
+    * fix 'deleted' 'dir' event groups
+* Test all gdrive_crud functions
 * gdrive_utils.find_id
-    * should return the id of the requested resource...
-        * currently returns just the parent
-    * Might get wrong child because of same parents but nested
+    * Might get wrong child because of same parents but nested (hard to reproduce)
 * clean names of paths for creating and moving files... 
     * using root "/" in start of paths
     * ending path names with "/"
