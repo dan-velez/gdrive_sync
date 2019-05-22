@@ -18,7 +18,8 @@ from apiclient import errors
 DEBUG = True
 
 def check_exists(parent_id, fname):
-    "Check for fname in the folder designated by parent_id."
+    """Check for fname in the folder designated by parent_id.
+    Returns None or the fileId."""
     service = create_service()
     if len(parent_id) == 0: query = ("name='%s'" % (fname))
     else: query = ("name='%s' and '%s' in parents" % (fname, parent_id))
@@ -27,6 +28,8 @@ def check_exists(parent_id, fname):
         fields="files(id, name)",
         pageToken=None).execute()
     files = resp.get('files', [])
+    if DEBUG: princ("[*] retrieving file_id for [%s]::[%s]" 
+        % (fname, str(len(files))), "cyan")
     if len(files) > 0: return files[0].get('id')
     else: return None
 
@@ -64,6 +67,7 @@ def find_id(drive_path):
         depth += 1
     # Print results
     res = { 'parent_id': current_parent,
+            'fname': fname,
             'file_id': check_exists(current_parent, fname) }
     if DEBUG: print("[*] Depth: [%s]" % (depth))
     if DEBUG: pprint.PrettyPrinter(indent=4).pprint(res)
@@ -122,5 +126,11 @@ def create_service():
 if __name__ == "__main__":
     # DEBUG #
     # find_id("chromeos/home_synced/ml-math/notes.txt")
+    find_id("chromeos/home_synced/modules")
+    print("\n")
+    find_id("chromeos/home_synced/modules/submodule")
+    print("\n")
     find_id("chromeos/home_synced/modules/submodule/TMP.txt")
+    print("\n")
+    find_id("chromeos/home_synced/modules/submodule/submodule7")
     pass

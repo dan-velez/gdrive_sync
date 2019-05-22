@@ -59,18 +59,18 @@ def move_file(drive_src_path, drive_dest_path):
     "Move a file or directory on the drive."
     service = create_service()
     # Get IDs for both paths
-    ids_src = find_id(drive_src_path)
-    ids_dest = find_id(drive_dest_path)
+    id_src = find_id(drive_src_path)
+    id_dest = find_id(drive_dest_path)
     new_fname = drive_dest_path.split(os.path.sep)[-1:][0]
     # Retrieve the existing parents to remove
-    f = service.files().get(fileId=ids_src['parent_id'],
+    f = service.files().get(fileId=id_src['file_id'],
 			    fields='parents').execute()
     previous_parents = ",".join(f.get('parents'))
     # Update the file by changing its parent ID.
     f = service.files().update(
+        fileId=id_src['file_id'],
         body={ "name": new_fname },
-        fileId=ids_src['parent_id'],
-        addParents=ids_dest['parent_id'],
+        addParents=id_dest['parent_id'],
         removeParents=previous_parents, # ids_src['find_id'],
         fields=('id, parents')).execute()
     princ("[*] moved [%s] to [%s]. ID: [%s]" %
@@ -89,6 +89,6 @@ def create_dir(drive_path):
 if __name__ == "__main__":
     try:
         # upload_file("main.py", "chromeos/home_synced/modules/submodule/prog.py")
-        move_file("chromeos/home_synced/submodule5/TMP.txt", "chromeos/home_synced/submodule/submodule7")
+        move_file("chromeos/home_synced/submodule/submodule7", "chromeos/home_synced/submodule/modules/submodule_7")
     except Exception as e:
        print("[*] could not execute [%s]" % (e))
