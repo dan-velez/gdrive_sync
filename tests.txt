@@ -20,15 +20,16 @@ DONE
 * Debug move_dir function
 * Debug fix_drive_mods
 * Removed return of trashed files in find_id function
+* Fixed create folder bug from find_id function
+* Tested crud functions
 
 TODO
 ----
-* main.fix_drive_mods
-    * fix 'deleted' 'dir' event groups
-* Test all gdrive_crud functions
 * clean names of paths for creating and moving files... 
     * using root "/" in start of paths
     * ending path names with "/"
+    * clean input path for gdrive folder...
+        * check if exists?
 * Update README
 
 * TEST:

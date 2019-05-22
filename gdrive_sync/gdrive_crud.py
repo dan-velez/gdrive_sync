@@ -53,7 +53,7 @@ def delete_file(drive_path):
     if not file_id is None:
         resp = service.files().delete(fileId=file_id).execute()
     princ("[*] deleted [%s]" % (drive_path), "green")
-    return
+    return file_id
 
 def move_file(drive_src_path, drive_dest_path):
     "Move a file or directory on the drive."

@@ -63,7 +63,7 @@ def find_id(drive_path):
                     % (current_parent, str(len(files))))
         else:
             # Create a dir if it does not exist.
-            if DEBUG: print("[*] could not find dir [%s]; create it" % (dirname))
+            if DEBUG: print("[*] could not find dir [%s]; create it" % (dirp))
             current_parent = create_folder(current_parent, dirp)
         depth += 1
     # Print results
@@ -78,6 +78,7 @@ def create_folder(parent_id, dirname):
     """Create a folder if it does not exist. You will need to know
     the parent ID to run this. Supply "" to create in root.
     """
+    service = create_service()
     if len(parent_id) == 0:
         # Create it in the root directory of the drive....
         file_metadata = { 'name': dirname,
@@ -149,9 +150,6 @@ def file_info(parent_id, fname):
 
 if __name__ == "__main__":
     # DEBUG #
-    find_id("chromeos/home_synced/ml-math/notes.txt")
-    find_id("chromeos/home_synced/gdrive_sync/gdrive_sync")
-    print(get_fname("17BQZ8rA1tsMnVTJCVGEGIZbi-Kb79hV0"))
     # TODO verify this call runs
-    # find_id("chromeos/home_synced/gdrive_sync/gdrive_sync/submodule_new")
+    find_id("chromeos/prog/module1/TMP.txt")
     pass

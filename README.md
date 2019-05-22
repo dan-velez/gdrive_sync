@@ -40,15 +40,20 @@ gdrive.move_file("drive_path", "project/module/main.py")
 	> Uploads string `local_path` to string `drive_path`.
 	*Returns*: string `file_id` if it is uploaded, `None` otherwise.
 
-* **create_dir (drive_path)**
-	> Works like `mkdir -p`.
-	*Returns*: a string id of the created directory.
-
 * **move_file (drive_src_path, drive_dest_path)**
 	> Move a file on the drive. If any folder in the destination path does not exist, it is created.
 	*Returns*: String fileID of the moved file.
-* **parent_id (drive_file)**
-	> Finds the id of the parent of `drive_file`.
+
+* **delete_file (drive_path)**
+	> Delete a file or directory on the drive.
+	*Returns*: The ID of the deleted file.
+	
+* **create_dir (drive_path)**
+	> Works like `mkdir -p`.
+	*Returns*: a string id of the created directory.
+	
+* **find_id (drive_file)**
+	> Finds the id of the of `drive_file` by descending into the parent directories.
 	*Returns*: an object with the id of the file, and the id of the parent. 
 	```python
 	{
@@ -58,4 +63,4 @@ gdrive.move_file("drive_path", "project/module/main.py")
 	```
 
 ## Description
-When the daemon starts it runs an instance of [watchdog](https://pypi.org/project/watchdog/) on the local_path directory. When a file is changed, it is uploaded to a path that corresponds to the one in the local folder. The file is overwritten if it exists. The synchronization function is ran every 60 seconds, and can be changed in the variable `SYNC_INTERVAL`  in the file `main.py`.
+When the daemon starts it runs an instance of [watchdog](https://pypi.org/project/watchdog/) on the local_path directory. When a file is changed, it is uploaded to a path that corresponds to the one in the local folder. The file is overwritten if it exists. The synchronization function is ran every 60 seconds, and can be changed in the variable `SYNC_INTERVAL`  in the file `main.py`. The API calls may take a couple minutes to take effect,
